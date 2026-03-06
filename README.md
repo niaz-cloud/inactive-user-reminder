@@ -1,59 +1,209 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Inactive User Reminder System (Laravel)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Overview
 
-## About Laravel
+This Laravel application detects users who have been inactive for a configurable number of days and sends them reminder notifications using a queued job. The system uses Laravel's **Scheduler**, **Queue**, and **Command** features to automatically process inactive users.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+This project was developed as part of an internship assignment.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+#  Features
 
-## Learning Laravel
+* Detect users inactive for a configurable number of days
+* Scheduled command runs daily
+* Queue job dispatches reminder for inactive users
+* Prevents users from receiving more than one reminder per day
+* Reminder activity is logged
+* Configurable inactivity period
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# Tech Stack
 
-## Laravel Sponsors
+* Laravel
+* MySQL
+* Laravel Scheduler
+* Laravel Queue
+* PHP
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+# Project Structure
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```
+app
+ ├─ Jobs
+ │   └─ SendInactiveUserReminder.php
+ │
+ ├─ Console
+ │   └─ Commands
+ │       └─ CheckInactiveUsers.php
 
-## Contributing
+config
+ └─ inactive.php
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+routes
+ └─ console.php
 
-## Code of Conduct
+database
+ └─ migrations
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+# ⚙️Installation
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Clone the repository:
 
-## License
+```
+git clone https://github.com/niaz-cloud/inactive-user-reminder.git
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Move into the project directory:
+
+```
+cd inactive-user-reminder
+```
+
+Install dependencies:
+
+```
+composer install
+```
+
+Create environment file:
+
+```
+cp .env.example .env
+```
+
+Generate application key:
+
+```
+php artisan key:generate
+```
+
+---
+
+#  Database Setup
+
+Update your `.env` file with database credentials.
+
+Example:
+
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=inactive_user_reminder
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Run migrations:
+
+```
+php artisan migrate
+```
+
+---
+
+#  Queue Setup
+
+This project uses Laravel Queue to process reminder jobs.
+
+Set queue connection in `.env`:
+
+```
+QUEUE_CONNECTION=database
+```
+
+Create queue tables:
+
+```
+php artisan queue:table
+php artisan migrate
+```
+
+Start queue worker:
+
+```
+php artisan queue:work
+```
+
+---
+
+# Scheduler Setup
+
+Laravel Scheduler runs the command daily to check inactive users.
+
+Run scheduler manually:
+
+```
+php artisan schedule:run
+```
+
+For production, add this cron job:
+
+```
+* * * * * php /path-to-project/artisan schedule:run >> /dev/null 2>&1
+```
+
+---
+
+#  Run Inactive User Check
+
+You can manually run the command:
+
+```
+php artisan users:check-inactive
+```
+
+This will:
+
+1. Find users inactive for the configured number of days
+2. Dispatch a reminder job
+3. Log reminder activity
+
+---
+
+#  Configuration
+
+The inactivity period can be configured in:
+
+```
+config/inactive.php
+```
+
+Example:
+
+```
+return [
+    'days' => 7,
+];
+```
+
+---
+
+#  Logging
+
+Reminder activity is logged in:
+
+```
+storage/logs/laravel.log
+```
+
+Example log:
+
+```
+Reminder sent to inactive user: test@example.com
+```
+
+---
+
+#  Author
+
+**Niaz Mohammad**
+Junior Web Developer
+Laravel | PHP | MySQL | React
